@@ -1,0 +1,20 @@
+occupation,worker_category,risk_level,wbgt_celsius,hour,guidance_english_urdu
+Steel / Glass Furnace Worker,indoor_radiant,EXTREME,33.7,15,"ENGLISH:
+- Right now: Step away from that 1500"
+Salt Pan Worker,outdoor,EXTREME,33.7,13,"ENGLISH:
+- Right now: Step off the bright"
+Tandoor Baker (Naan Maker),indoor_radiant,EXTREME,33.7,16,"ENGLISH:
+- Right now: Step away from that hot tandoor oven"
+Sewage / Manhole Worker,outdoor,EXTREME,33.7,10,"ENGLISH:
+- Right now: Climb out of that manhole immediately,"
+Road Paver / Asphalt Layer,outdoor,EXTREME,33.7,14,"ENGLISH:
+- Right now: Step away from that boiling"
+Construction Laborer,outdoor,HIGH,30.5,11,"ENGLISH:
+- Right now: Put down those heavy metal rods and cement bags"
+Cotton Picker,outdoor,HIGH,29.8,12,"ENGLISH:
+- Right now: Stop bending in the fields,"
+Rickshaw Driver,vehicle,MODERATE,27.5,9,Retry failed — skipping this entry
+Truck Driver,vehicle,MODERATE,28.0,14,Retry failed — skipping this entry
+Fisherman (Machera),outdoor,HIGH,30.5,9,Retry failed — skipping this entry
+Scrap Collector (Kabari Wala),outdoor,HIGH,31.0,13,Retry failed — skipping this entry
+Open Drain Cleaner (Naali Safai Wala),outdoor,EXTREME,33.7,10,Retry failed — skipping this entry

@@ -177,6 +177,22 @@ OCCUPATION_PROFILES = {
     },
 }
 
+# El Nino Risk Elevation Mode
+# Source: Climate Impact Lab (2026) — projects +1.2C above normal land temperatures
+# WHO-WMO Joint Programme declared El Nino a "significant public health threat" Sept 2026
+EL_NINO_ACTIVE = True
+EL_NINO_WBGT_ADJUSTMENT = 1.2
+
+def apply_el_nino_adjustment(wbgt):
+    """
+    Applies seasonal WBGT correction during active El Nino phases.
+    When active, elevates effective WBGT by 1.2C — consistent with
+    Climate Impact Lab projections of 44% more extremely hot days.
+    """
+    if EL_NINO_ACTIVE:
+        return round(wbgt + EL_NINO_WBGT_ADJUSTMENT, 2)
+    return wbgt
+
 def classify_risk(wbgt, occupation):
     t = OCCUPATION_PROFILES[occupation]['thresholds']
     if wbgt >= t['extreme']: return 'EXTREME'
