@@ -52,7 +52,7 @@ OCCUPATION_PROFILES = {
     'shoe_shiner': {
         'label': 'Shoe Shiner / Mochi',
         'metabolic_rate_W': 160,
-        # Crouching on pavement all day — ground-level heat is worse than standing
+        # Crouching on pavement all day; ground-level heat is worse than standing
         'thresholds': {'moderate': 27, 'high': 30, 'extreme': 33},
         'work_rest': {'moderate': (55, 5), 'high': (45, 15), 'extreme': (25, 35)}
     },
@@ -81,14 +81,14 @@ OCCUPATION_PROFILES = {
     'fisherman': {
         'label': 'Fisherman (Machera)',
         'metabolic_rate_W': 350,
-        # Sea surface reflects solar radiation — double exposure from above and below
+        # Sea surface reflects solar radiation; double exposure from above and below
         'thresholds': {'moderate': 26, 'high': 29, 'extreme': 32},
         'work_rest': {'moderate': (45, 15), 'high': (30, 30), 'extreme': (15, 45)}
     },
     'salt_pan_worker': {
         'label': 'Salt Pan Worker',
         'metabolic_rate_W': 400,
-        # White salt flats reflect ~80% of solar radiation — radiation from above AND below
+        # White salt flats reflect ~80% of solar radiation; radiation from above AND below
         # Most extreme microclimate in Pakistan. Thresholds significantly lower.
         'thresholds': {'moderate': 22, 'high': 25, 'extreme': 28},
         'work_rest': {'moderate': (35, 25), 'high': (20, 40), 'extreme': (10, 50)}
@@ -111,14 +111,14 @@ OCCUPATION_PROFILES = {
     'naali_safai': {
         'label': 'Open Drain Cleaner (Naali Safai Wala)',
         'metabolic_rate_W': 400,
-        # Crouching in open drains — trapped radiant heat + toxic gases
+        # Crouching in open drains; trapped radiant heat + toxic gases
         'thresholds': {'moderate': 24, 'high': 27, 'extreme': 30},
         'work_rest': {'moderate': (40, 20), 'high': (20, 40), 'extreme': (10, 50)}
     },
     'sewage_worker': {
         'label': 'Sewage / Manhole Worker',
         'metabolic_rate_W': 420,
-        # Underground manholes trap heat — ambient WBGT underestimates real exposure
+        # Underground manholes trap heat; ambient WBGT underestimates real exposure
         'thresholds': {'moderate': 24, 'high': 26, 'extreme': 29},
         'work_rest': {'moderate': (35, 25), 'high': (20, 40), 'extreme': (10, 50)}
     },
@@ -178,7 +178,7 @@ OCCUPATION_PROFILES = {
 }
 
 # El Nino Risk Elevation Mode
-# Source: Climate Impact Lab (2026) — projects +1.2C above normal land temperatures
+# Source: Climate Impact Lab (2026); projects +1.2C above normal land temperatures
 # WHO-WMO Joint Programme declared El Nino a "significant public health threat" Sept 2026
 EL_NINO_ACTIVE = True
 EL_NINO_WBGT_ADJUSTMENT = 1.2

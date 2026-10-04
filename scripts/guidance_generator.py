@@ -202,7 +202,7 @@ def generate_all_sample_guidance():
             'guidance_english_urdu': guidance
         })
 
-        time.sleep(5)  # prevents server overload
+        time.sleep(5)  
 
     df = pd.DataFrame(results)
     df.to_csv('data/sample_guidance_outputs.csv', index=False)
