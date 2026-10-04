@@ -7,7 +7,13 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-client = genai.Client(api_key=os.getenv('GEMINI_API_KEY'))
+try:
+    import streamlit as st
+    api_key = st.secrets.get('GEMINI_API_KEY') or os.getenv('GEMINI_API_KEY', '')
+except Exception:
+    api_key = os.getenv('GEMINI_API_KEY', '')
+
+client = genai.Client(api_key=api_key)
 
 MODEL = 'models/gemini-3.6-flash'
 
