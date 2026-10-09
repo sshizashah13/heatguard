@@ -4,7 +4,7 @@ Most heat warning systems warn about the weather.
 This one warns about the person standing in it.
 
 A construction laborer and a delivery rider on the same Karachi street corner 
-at the same moment face biologically different emergencies — different metabolic 
+at the same moment face biologically different emergencies; different metabolic 
 loads, different thresholds, different survival windows. No existing system 
 accounts for that. HeatGuard does.
 
@@ -18,21 +18,21 @@ Pulls hourly weather data from Open-Meteo, computes Wet-Bulb Globe Temperature
 using the Stull (2011) formula with solar radiation correction, and classifies 
 heat stress risk across 24 occupation profiles calibrated to NIOSH metabolic 
 rate thresholds. It then generates occupation-specific safety guidance in English 
-and Roman Urdu through a large language model — calibrated for 5th-grade literacy, 
+and Roman Urdu through a large language model; calibrated for 5th-grade literacy, 
 because that's who needs to read it.
 
 The system is retrospectively validated against the June 2015 Karachi heatwave, 
-which killed 1,228 people in a single week — most of them outdoor laborers, most 
+which killed 1,228 people in a single week; most of them outdoor laborers, most 
 of their deaths recorded as cardiac failure.
 
 ---
 
 ## Key findings from 2015 validation
 
-- Peak WBGT: **33.7°C** (June 20, 2015) — above EXTREME threshold for all 
+- Peak WBGT: **33.7°C** (June 20, 2015), above EXTREME threshold for all 
   high-metabolic occupations
 - Steel furnace workers remained at EXTREME risk for **92 consecutive hours**
-- Peak OMGI: **11.7×** — a steel furnace worker experienced heat stress 11.7 
+- Peak OMGI: **11.7×** - a steel furnace worker experienced heat stress 11.7 
   times more dangerous than an office worker at the same location and moment
 - WBGT–mortality correlation: **r = 0.53** (n=8 days)
 
@@ -58,7 +58,7 @@ Cotton pickers · Fishermen (Machera) · Rickshaw drivers · Kabari walas ·
 Construction laborers · and 12 more.
 
 Thresholds are set lower for workers with higher metabolic rates and radiant 
-heat exposure — a salt pan worker's EXTREME threshold is 28°C WBGT, not 32°C, 
+heat exposure; a salt pan worker's EXTREME threshold is 28°C WBGT, not 32°C, 
 because white salt flats reflect 80% of solar radiation from below as well as above.
 
 ---
@@ -68,7 +68,7 @@ because white salt flats reflect 80% of solar radiation from below as well as ab
 WHO–WMO declared El Niño a "significant public health threat" in September 2026. 
 The Climate Impact Lab projects 451,000 additional heat deaths globally through 
 February 2027. When El Niño mode is toggled on, HeatGuard applies a +1.2°C 
-WBGT elevation across all classifications — consistent with Climate Impact Lab 
+WBGT elevation across all classifications; consistent with Climate Impact Lab 
 projections of 44% more extremely hot days.
 
 ---
@@ -131,7 +131,7 @@ GEMINI_API_KEY=your_key_here
 ## Conference
 
 Submitted to the 1st International Conference on Smart Sustainable Infrastructure  
-for Circular Economy and Resource Efficiency — MUET Jamshoro
+for Circular Economy and Resource Efficiency - MUET Jamshoro
 
 **Author:** Shiza Shah · Department of Computer Science · MUET Jamshoro  
 **LinkedIn:** [linkedin.com/in/sshizashah](https://linkedin.com/in/sshizashah)
