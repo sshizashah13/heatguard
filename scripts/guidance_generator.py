@@ -74,6 +74,8 @@ def get_worker_category(occupation_label):
             return 'vehicle'
     return 'outdoor'
 
+import json
+
 def generate_guidance(occupation_label, risk_level, wbgt, hour_of_day):
     time_context = (
         "very early morning (pre-dawn work)" if hour_of_day < 6
@@ -120,13 +122,17 @@ Return a JSON object with exactly two keys: "english" and "urdu".
             contents=prompt,
             config=types.GenerateContentConfig(
                 temperature=0.2,
-                max_output_tokens=800,  
+                max_output_tokens=800,
                 response_mime_type="application/json"
             )
         )
         data = json.loads(response.text)
-        return data.get("english", ""), data.get("urdu", "")
-    except Exception:
+        
+        eng = str(data.get("english", "")).strip()
+        urdu = str(data.get("urdu", "")).strip()
+        return eng, urdu
+
+    except Exception as e:
         if risk_level == 'EXTREME':
             return (
                 "• Right now: Stop work immediately and move to shade\n• You have: STOP IMMEDIATELY\n• Watch for: If you stop sweating or feel confused, call for help now",
@@ -136,7 +142,6 @@ Return a JSON object with exactly two keys: "english" and "urdu".
             "• Right now: Take a break in shade and drink water\n• You have: Rest 15 mins per hour\n• Watch for: Mild headache or dizziness",
             "• ابھی کریں: چھاؤں میں بیٹھیں اور پانی پیئیں\n• کتنا کام: ہر گھنٹے ۱۵ منٹ آرام کریں\n• خبردار: ہلکا سر درد یا چکر آنے کا دھیان رکھیں"
         )
-
 def generate_all_sample_guidance():
     from occupation_classifier import OCCUPATION_PROFILES
 
@@ -170,15 +175,16 @@ def generate_all_sample_guidance():
         print("-" * 65)
 
         try:
-            guidance = generate_guidance(label, risk, wbgt, hour)
+            eng, urdu = generate_guidance(label, risk, wbgt, hour)
         except Exception as e:
             print(f"   ⚠️ Error, retrying in 10 seconds... ({e})")
             time.sleep(10)
             try:
-                guidance = generate_guidance(label, risk, wbgt, hour)
+                eng, urdu = generate_guidance(label, risk, wbgt, hour)
             except Exception:
-                guidance = "Retry failed — skipping this entry"
+                eng, urdu = "Retry failed — skipping this entry", "Retry failed — skipping this entry"
 
+        guidance = f"ENGLISH:\n{eng}\n\nURDU:\n{urdu}"
         print(guidance)
         print("-" * 65)
 
