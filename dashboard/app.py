@@ -890,7 +890,7 @@ st.markdown(f"""
     &nbsp; Urban planners, labour welfare officers, public health administrators,
     and NGOs operating in Pakistan — to identify which worker categories need
     intervention, which hours to suspend outdoor work orders, and where to deploy
-    cooling stations. Worker-facing guidance is generated below in English and Roman Urdu
+    cooling stations. Worker-facing guidance is generated below in English and Urdu
     for SMS or community health worker delivery.
 </div>
 """, unsafe_allow_html=True)
@@ -1073,7 +1073,7 @@ st.markdown(occ_html, unsafe_allow_html=True)
 st.markdown("""
 <div class="section-hdr" style="margin-top:36px">
     <div class="sec-title">Bilingual Safety Guidance</div>
-    <div class="sec-cap">English + Roman Urdu · Occupation-specific · 5th-grade literacy</div>
+    <div class="sec-cap">English + Urdu · Occupation-specific · 5th-grade literacy</div>
 </div>
 """, unsafe_allow_html=True)
 
@@ -1092,24 +1092,22 @@ with bc2:
 if gen:
     with st.spinner(""):
         try:
-            g = generate_guidance(occ_label, risk, wbgt_val, datetime.now().hour)
-            parts = g.split('ROMAN URDU:')
-            eng  = parts[0].replace('ENGLISH:', '').strip()
-            urdu = parts[1].strip() if len(parts) > 1 else "Urdu output unavailable."
+            eng_text, urdu_text = generate_guidance(occ_label, risk, wbgt_val, datetime.now().hour)
+
             st.markdown(f"""
             <div class="guidance-pair">
                 <div class="g-card" style="border-top-color:#3b82f6">
                     <div class="g-lang">English Guidance</div>
-                    <div class="g-text">{eng}</div>
+                    <div class="g-text">{eng_text}</div>
                 </div>
                 <div class="g-card" style="border-top-color:#22c55e">
-                    <div class="g-lang">Roman Urdu — رومن اردو</div>
-                    <div class="g-text">{urdu}</div>
+                    <div class="g-lang">اردو — Urdu Guidance</div>
+                    <div class="g-text" style="direction: rtl; text-align: right; font-size: 15px; line-height: 2.0; font-family: sans-serif;">{urdu_text}</div>
                 </div>
             </div>
             """, unsafe_allow_html=True)
-        except Exception:
-            st.error("API limit reached. Wait a moment and try again.")
+        except Exception as e:
+            st.error(f"Guidance generation error: {e}")
 
 # ── 2015 VALIDATION ────────────────────────────────────────────────────────
 if "2015" in view_mode:

@@ -4,6 +4,7 @@ import os
 import pandas as pd
 import time
 from dotenv import load_dotenv
+import json
 
 load_dotenv()
 
@@ -88,71 +89,53 @@ def generate_guidance(occupation_label, risk_level, wbgt, hour_of_day):
     intervention = ACTIONABLE_INTERVENTIONS.get(risk_level, {}).get(category, '')
 
     if risk_level == 'EXTREME':
-        symptom_context = "stopped sweating despite extreme heat, confusion, dizziness, or skin that feels dry and very hot"
+        symptom_context = "stopped sweating despite extreme heat, confusion, dizziness, or dry skin"
     elif risk_level == 'HIGH':
-        symptom_context = "heavy headache, feeling very weak, or heart beating unusually fast"
+        symptom_context = "heavy headache, feeling very weak, or fast heart rate"
     else:
-        symptom_context = "mild headache, feeling thirsty, or slight dizziness"
+        symptom_context = "mild headache, thirst, or slight dizziness"
 
     prompt = f"""You are a heat safety expert advising informal workers in Pakistan.
-Your guidance must be life-saving, specific, and immediately actionable.
 
 WORKER SITUATION:
 - Occupation: {occupation_label}
-- What they are doing: {worker_context}
-- Heat stress (WBGT): {wbgt:.1f} degrees Celsius
-- Risk level: {risk_level}
+- Tasks: {worker_context}
+- WBGT: {wbgt:.1f}°C
+- Risk Level: {risk_level}
 - Time: {time_context}
-- Recommended action: {intervention}
-- Warning symptoms to mention: {symptom_context}
+- Recommended Action: {intervention}
+- Warning Symptoms: {symptom_context}
 
 CRITICAL RULES:
-1. English must sound like a concerned friend texting, not a doctor
-2. Roman Urdu must sound natural to a Karachi/Sindh worker, not translated English
-3. Mention their SPECIFIC work tool or situation (tandoor, rehri, asphalt, etc.)
-4. If EXTREME: Roman Urdu section must start with KAAM BAND KARO FORAN
-5. Give EXACT minutes for work/rest, not vague advice
-6. Warning sign must be a body feeling they will recognise, not a medical term
-7. Maximum 3 bullet points per language, no more
-8. Roman Urdu must use Karachi street language: yaar, bhai, foran, abhi, bilkul nahi
+1. English must sound like a helpful friend texting concise advice.
+2. Urdu MUST be in natural Urdu script (اردو) for a worker in Sindh/Karachi.
+3. Provide exactly 3 short bullet points per language.
 
-OUTPUT FORMAT (use exactly this, no extra text before or after):
-ENGLISH:
-- Right now: [specific action mentioning their actual work]
-- You have: [X minutes safe OR STOP IMMEDIATELY]
-- Watch for: [specific body feeling in plain words]
-
-ROMAN URDU:
-- Abhi karo: [natural Urdu, not translated English]
-- Aur kitna kaam: [how many minutes of work left, in natural Urdu]
-- Khabardar: [one body feeling in plain Karachi street Urdu]"""
-
-    response = client.models.generate_content(
-        model=MODEL,
-        contents=prompt,
-        config=types.GenerateContentConfig(
-            temperature=0.3,
-            max_output_tokens=400,
-            top_p=0.8,
-        )
-    )
+Return a JSON object with exactly two keys: "english" and "urdu".
+"""
 
     try:
-        return response.text.strip()
+        response = client.models.generate_content(
+            model=MODEL,
+            contents=prompt,
+            config=types.GenerateContentConfig(
+                temperature=0.2,
+                max_output_tokens=800,  
+                response_mime_type="application/json"
+            )
+        )
+        data = json.loads(response.text)
+        return data.get("english", ""), data.get("urdu", "")
     except Exception:
         if risk_level == 'EXTREME':
             return (
-                "ENGLISH:\n"
-                "• Right now: Stop work immediately and move to shade\n"
-                "• You have: STOP IMMEDIATELY\n"
-                "• Watch for: If you stop sweating or feel confused, call for help now\n\n"
-                "ROMAN URDU:\n"
-                "• Abhi karo: KAAM BAND KARO FORAN, chaon mein jao\n"
-                "• Aur kitna kaam: Bilkul kaam nahi, abhi ruko\n"
-                "• Khabardar: Agar pasina band ho jaye ya chakkar aaye, foran madad lo"
+                "• Right now: Stop work immediately and move to shade\n• You have: STOP IMMEDIATELY\n• Watch for: If you stop sweating or feel confused, call for help now",
+                "• ابھی کریں: کام فوراً بند کریں اور چھاؤں میں جائیں\n• کتنا کام: بالکل کام نہیں، ابھی رکیں\n• خبردار: اگر پسینہ بند ہو جائے یا چکر آئیں، فوراً مدد لیں"
             )
-        return "Guidance temporarily unavailable. Stay hydrated and rest in shade."
-
+        return (
+            "• Right now: Take a break in shade and drink water\n• You have: Rest 15 mins per hour\n• Watch for: Mild headache or dizziness",
+            "• ابھی کریں: چھاؤں میں بیٹھیں اور پانی پیئیں\n• کتنا کام: ہر گھنٹے ۱۵ منٹ آرام کریں\n• خبردار: ہلکا سر درد یا چکر آنے کا دھیان رکھیں"
+        )
 
 def generate_all_sample_guidance():
     from occupation_classifier import OCCUPATION_PROFILES
