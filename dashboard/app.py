@@ -733,44 +733,41 @@ def load_live(city='Karachi'):
 
 @st.cache_data(ttl=1800)
 def load_all_cities(el_nino_active=False):
-    from concurrent.futures import ThreadPoolExecutor, as_completed
-    from scripts.occupation_classifier import classify_risk
+    import sys
+    import os
+    sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-    def fetch_city(city_name):
+    from scripts.fetch_weather import fetch_weather, PAKISTAN_CITIES
+    from scripts.wbgt_calculator import add_wbgt_to_df
+    from scripts.occupation_classifier import classify_risk, apply_el_nino_adjustment
+    from datetime import datetime
+
+    results = []
+    nh = datetime.now().hour
+
+    for city_name in PAKISTAN_CITIES:
         try:
             df_city = fetch_weather(city=city_name)
             df_city = add_wbgt_to_df(df_city)
 
-            nh = datetime.now().hour
             rows = df_city[df_city['time'].dt.hour == nh]
             cur_city = rows.iloc[0] if len(rows) else df_city.iloc[0]
 
-            wbgt = cur_city['WBGT']
+            wbgt = float(cur_city['WBGT'])
             if el_nino_active:
                 wbgt = apply_el_nino_adjustment(wbgt)
 
-            omgi = cur_city['OMGI']
-
-            return {
+            results.append({
                 'City': city_name,
                 'WBGT (°C)': round(wbgt, 1),
-                'Temp (°C)': round(cur_city['temp_c'], 1),
+                'Temp (°C)': round(float(cur_city['temp_c']), 1),
                 'Humidity (%)': int(cur_city['rh_pct']),
-                'OMGI': round(omgi, 1),
+                'OMGI': round(float(max(1.0, (wbgt - 22.0) / (32.0 - 22.0) * 10)), 1),
                 'Heavy Worker Risk': classify_risk(wbgt, 'construction_laborer'),
                 'Light Worker Risk': classify_risk(wbgt, 'street_vendor'),
-            }
-        except Exception:
-            return None
-
-    results = []
-    with ThreadPoolExecutor(max_workers=6) as executor:
-        futures = {executor.submit(fetch_city, city): city
-                   for city in PAKISTAN_CITIES}
-        for future in as_completed(futures):
-            result = future.result()
-            if result:
-                results.append(result)
+            })
+        except Exception as e:
+            continue
 
     if not results:
         return pd.DataFrame()
@@ -1313,7 +1310,7 @@ if not city_df.empty:
         return colors.get(val, '')
 
     styled = city_df.style\
-        .applymap(style_risk, subset=['Heavy Worker Risk', 'Light Worker Risk'])\
+        .map(style_risk, subset=['Heavy Worker Risk', 'Light Worker Risk'])\
         .set_properties(**{
             'background-color': '#141414',
             'color': 'rgba(240,236,232,0.7)',
