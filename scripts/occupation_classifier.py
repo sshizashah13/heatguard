@@ -177,6 +177,7 @@ OCCUPATION_PROFILES = {
     },
 }
 
+
 # El Nino Risk Elevation Mode
 # Source: Climate Impact Lab (2026); projects +1.2C above normal land temperatures
 # WHO-WMO Joint Programme declared El Nino a "significant public health threat" Sept 2026
@@ -210,6 +211,71 @@ def calculate_omgi(wbgt):
     if wbgt <= office_wbgt: return 1.0
     gap = (wbgt - office_wbgt) / (extreme_threshold - office_wbgt)
     return round(max(1.0, gap * 10), 1)
+
+# NIOSH REL maximum exposure duration lookup
+# Source: NIOSH (2016) Publication No. 2016-106, Table B-1
+# Values represent maximum continuous work minutes before mandatory rest
+# at given WBGT levels for each metabolic rate category
+NIOSH_MAX_EXPOSURE = {
+    'heavy': {
+        # WBGT threshold: max minutes continuous exposure
+        25: 60, 26: 50, 27: 40, 28: 30, 29: 20,
+        30: 15, 31: 10, 32: 5, 33: 0, 34: 0
+    },
+    'moderate': {
+        26: 60, 27: 55, 28: 50, 29: 40, 30: 30,
+        31: 20, 32: 15, 33: 10, 34: 5, 35: 0
+    },
+    'light': {
+        28: 60, 29: 60, 30: 55, 31: 50, 32: 40,
+        33: 30, 34: 20, 35: 10, 36: 5, 37: 0
+    }
+}
+
+METABOLIC_CATEGORY = {
+    'construction_laborer': 'heavy',
+    'road_paver': 'heavy',
+    'agricultural_worker': 'heavy',
+    'cotton_picker': 'heavy',
+    'brick_kiln_worker': 'heavy',
+    'steel_furnace_worker': 'heavy',
+    'glass_factory_worker': 'heavy',
+    'naali_safai': 'heavy',
+    'kabari_wala': 'moderate',
+    'garbage_collector': 'moderate',
+    'sweeper': 'moderate',
+    'fisherman': 'moderate',
+    'sewage_worker': 'heavy',
+    'delivery_rider': 'moderate',
+    'rickshaw_driver': 'moderate',
+    'street_vendor': 'light',
+    'sabzi_mandi_seller': 'light',
+    'shoe_shiner': 'light',
+    'tandoor_baker': 'heavy',
+    'textile_mill_worker': 'moderate',
+    'cement_factory_worker': 'moderate',
+    'truck_driver': 'light',
+    'salt_pan_worker': 'heavy',
+    'ice_factory_worker': 'moderate',
+}
+
+def get_survivability_minutes(wbgt, occupation_key):
+    """
+    Returns maximum safe continuous exposure in minutes before mandatory rest.
+    Derived from NIOSH (2016) REL tables, Table B-1.
+    Returns 0 if WBGT exceeds all safe thresholds.
+    """
+    category = METABOLIC_CATEGORY.get(occupation_key, 'moderate')
+    table = NIOSH_MAX_EXPOSURE.get(category, {})
+
+    wbgt_rounded = int(round(wbgt))
+
+    applicable = {k: v for k, v in table.items() if k <= wbgt_rounded}
+    if not applicable:
+        return 60  # Below all thresholds: safe
+
+    closest_key = max(applicable.keys())
+    return applicable[closest_key]
 
 def classify_all_occupations(df):
     for occ in OCCUPATION_PROFILES:

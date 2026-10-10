@@ -16,7 +16,8 @@ from scripts.fetch_weather import PAKISTAN_CITIES, fetch_weather
 from scripts.wbgt_calculator import add_wbgt_to_df
 from scripts.occupation_classifier import (
     OCCUPATION_PROFILES, classify_all_occupations,
-    get_work_rest, apply_el_nino_adjustment, EL_NINO_ACTIVE
+    get_work_rest, apply_el_nino_adjustment, EL_NINO_ACTIVE,
+    get_survivability_minutes
 )
 from scripts.guidance_generator import generate_guidance
 
@@ -730,6 +731,55 @@ def load_live(city='Karachi'):
     df = fetch_weather(city=city)
     return add_wbgt_to_df(df)
 
+@st.cache_data(ttl=1800)
+def load_all_cities(el_nino_active=False):
+    from concurrent.futures import ThreadPoolExecutor, as_completed
+    from scripts.occupation_classifier import classify_risk
+
+    def fetch_city(city_name):
+        try:
+            df_city = fetch_weather(city=city_name)
+            df_city = add_wbgt_to_df(df_city)
+
+            nh = datetime.now().hour
+            rows = df_city[df_city['time'].dt.hour == nh]
+            cur_city = rows.iloc[0] if len(rows) else df_city.iloc[0]
+
+            wbgt = cur_city['WBGT']
+            if el_nino_active:
+                wbgt = apply_el_nino_adjustment(wbgt)
+
+            omgi = cur_city['OMGI']
+
+            return {
+                'City': city_name,
+                'WBGT (°C)': round(wbgt, 1),
+                'Temp (°C)': round(cur_city['temp_c'], 1),
+                'Humidity (%)': int(cur_city['rh_pct']),
+                'OMGI': round(omgi, 1),
+                'Heavy Worker Risk': classify_risk(wbgt, 'construction_laborer'),
+                'Light Worker Risk': classify_risk(wbgt, 'street_vendor'),
+            }
+        except Exception:
+            return None
+
+    results = []
+    with ThreadPoolExecutor(max_workers=6) as executor:
+        futures = {executor.submit(fetch_city, city): city
+                   for city in PAKISTAN_CITIES}
+        for future in as_completed(futures):
+            result = future.result()
+            if result:
+                results.append(result)
+
+    if not results:
+        return pd.DataFrame()
+
+    result_df = pd.DataFrame(results)
+    result_df = result_df.sort_values('WBGT (°C)', ascending=False).reset_index(drop=True)
+    result_df.insert(0, 'Rank', range(1, len(result_df) + 1))
+    return result_df
+
 @st.cache_data
 def load_2015():
     df = pd.read_csv('data/karachi_2015_heatwave.csv')
@@ -954,13 +1004,26 @@ st.markdown(f"""
 """, unsafe_allow_html=True)
 
 # ── RISK BANNER ───────────────────────────────────────────────────────────
+surv_minutes = get_survivability_minutes(wbgt_val, occ_key)
+surv_text = (
+    f"Max continuous exposure without rest: {surv_minutes} min"
+    if surv_minutes > 0
+    else "No safe continuous exposure at this WBGT"
+)
+
 st.markdown(f"""
 <div class="risk-banner">
     <div class="risk-badge"
          style="color:{rc['hex']}; border-color:{rc['border']}; background:{rc['bg']}">
         {risk}
     </div>
-    <div class="risk-occ-name">{occ_label}</div>
+    <div>
+        <div class="risk-occ-name">{occ_label}</div>
+        <div style="font-family:'JetBrains Mono',monospace; font-size:10px;
+             color:rgba(240,236,232,0.3); margin-top:4px">
+            {surv_text}
+        </div>
+    </div>
     <div class="wr-tag">{wr_str}</div>
 </div>
 """, unsafe_allow_html=True)
@@ -1227,6 +1290,68 @@ if "2015" in view_mode:
     except Exception as e:
         st.caption(f"Mortality analysis unavailable: {e}")
 
+# ── CITY COMPARISON PANEL ─────────────────────────────────────────────────
+st.markdown("""
+<div class="section-hdr" style="margin-top:36px">
+    <div class="sec-title">Pakistan City Rankings — Live WBGT</div>
+    <div class="sec-cap">Which city needs intervention most urgently right now?
+    Ranked by current WBGT · Updates every 30 minutes</div>
+</div>
+""", unsafe_allow_html=True)
+
+with st.spinner("Fetching all 12 cities..."):
+    city_df = load_all_cities(el_nino_active=el_nino)
+
+if not city_df.empty:
+    def style_risk(val):
+        colors = {
+            'EXTREME': 'background-color: rgba(239,68,68,0.2); color: #ef4444',
+            'HIGH':    'background-color: rgba(249,115,22,0.2); color: #f97316',
+            'MODERATE':'background-color: rgba(234,179,8,0.2); color: #eab308',
+            'SAFE':    'background-color: rgba(34,197,94,0.2); color: #22c55e',
+        }
+        return colors.get(val, '')
+
+    styled = city_df.style\
+        .applymap(style_risk, subset=['Heavy Worker Risk', 'Light Worker Risk'])\
+        .set_properties(**{
+            'background-color': '#141414',
+            'color': 'rgba(240,236,232,0.7)',
+            'border': '1px solid rgba(255,255,255,0.05)',
+            'font-size': '13px',
+        })\
+        .set_table_styles([{
+            'selector': 'th',
+            'props': [
+                ('background-color', '#0e0e0e'),
+                ('color', 'rgba(240,236,232,0.35)'),
+                ('font-family', 'JetBrains Mono, monospace'),
+                ('font-size', '10px'),
+                ('letter-spacing', '0.1em'),
+                ('border', '1px solid rgba(255,255,255,0.05)'),
+            ]
+        }])
+
+    st.dataframe(
+        styled,
+        use_container_width=True,
+        hide_index=True
+    )
+
+    top_city = city_df.iloc[0]
+    top_risk_col = '#ef4444' if top_city['Heavy Worker Risk'] == 'EXTREME' else '#f97316'
+    st.markdown(f"""
+    <div style="margin-top:12px; padding:14px 20px;
+         background:rgba(239,68,68,0.06); border-left:2px solid {top_risk_col};
+         border-radius:4px; font-size:13px; color:rgba(240,236,232,0.55)">
+        <strong style="color:rgba(240,236,232,0.8)">{top_city['City']}</strong>
+        has the highest current WBGT at
+        <strong style="color:{top_risk_col}">{top_city['WBGT (°C)']}°C</strong>
+        — heavy workers here face
+        <strong style="color:{top_risk_col}">{top_city['Heavy Worker Risk']} RISK</strong>
+        with an OMGI of {top_city['OMGI']}×.
+    </div>
+    """, unsafe_allow_html=True)
 
 # ── FOOTER ─────────────────────────────────────────────────────────────────
 st.markdown("""
