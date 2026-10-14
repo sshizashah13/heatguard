@@ -1,5 +1,4 @@
 
-```markdown
 # HeatGuard
 
 Most heat warning systems warn about the weather.  
