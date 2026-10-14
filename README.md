@@ -33,9 +33,11 @@ The system is retrospectively evaluated against documented conditions of the Jun
 
 The Occupational Mortality Gap Index (OMGI) is a normalized metric introduced in this project to summarize environmental heat exposure inequality. It quantifies how far ambient WBGT exceeds a climate-controlled indoor reference baseline ($W_{\text{ref}} = 22\text{ }^\circ\text{C}$):
 
-$$\text{OMGI} = \max\left\{1, 10 \cdot \frac{\text{WBGT} - W_{\text{ref}}}{W_{\text{ext}} - W_{\text{ref}}}\right\}$$
+$$
+\text{OMGI} = \max\left(1, 10 \cdot \frac{\text{WBGT} - W_{\text{ref}}}{W_{\text{ext}} - W_{\text{ref}}}\right)
+$$
 
-where $W_{\text{ext}} = 32\text{ }^\circ\text{C}$ corresponds to the EXTREME threshold of a heavy-labor worker. During the June 22, 2015 Karachi peak, the OMGI reached 11.7.
+where $W_{\text{ext}} = 32^\circ\text{C}$ corresponds to the EXTREME threshold of a heavy-labor worker. During the June 22, 2015 Karachi peak, the OMGI reached 11.7.
 
 ---
 
@@ -124,14 +126,3 @@ Submitted to the **1st International Conference on Smart Sustainable Infrastruct
 
 ```
 
----
-
-### **How to Commit this Update:**
-
-If you edit the `README.md` directly on GitHub:
-1. Save/Commit the changes on GitHub.
-2. In Anaconda Prompt, run:
-   ```bash
-   git pull
-
-```
