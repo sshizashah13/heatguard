@@ -1,137 +1,138 @@
+
+```markdown
 # HeatGuard
 
 Most heat warning systems warn about the weather.  
 This one warns about the person standing in it.
 
-A construction laborer and a delivery rider on the same Karachi street corner 
-at the same moment face biologically different emergencies; different metabolic 
-loads, different thresholds, different survival windows. No existing system 
-accounts for that. HeatGuard does.
+A construction laborer and a delivery rider on the same Karachi street corner at the same moment face biologically different emergencies: different metabolic loads, different exposure thresholds, and different physiological limits. No existing system accounts for these differences. HeatGuard does.
 
 **Live:** https://heatguard-pakistan.streamlit.app
 
 ---
 
-## What it does
+## What It Does
 
-Pulls hourly weather data from Open-Meteo, computes Wet-Bulb Globe Temperature 
-using the Stull (2011) formula with solar radiation correction, and classifies 
-heat stress risk across 24 occupation profiles calibrated to NIOSH metabolic 
-rate thresholds. It then generates occupation-specific safety guidance in English 
-and Roman Urdu through a large language model; calibrated for 5th-grade literacy, 
-because that's who needs to read it.
+HeatGuard pulls hourly meteorological data from Open-Meteo, computes Wet-Bulb Globe Temperature (WBGT) using the Stull (2011) wet-bulb equation alongside an outdoor solar and wind weighting correction (ISO 7243:2017), and classifies thermal risk across 24 occupation profiles calibrated to NIOSH metabolic limits. 
 
-The system is retrospectively validated against the June 2015 Karachi heatwave, 
-which killed 1,228 people in a single week; most of them outdoor laborers, most 
-of their deaths recorded as cardiac failure.
+It then generates task-specific safety guidance in English and native Urdu script (اردو) using Gemini 3.6 Flash, calibrated to approximately a fifth-grade literacy level and grounded in realistic workplace microclimates.
+
+The system is retrospectively evaluated against documented conditions of the June 2015 Karachi heatwave, one of the deadliest thermal disasters in modern regional history.
 
 ---
 
-## Key findings from 2015 validation
+## Key Findings from 2015 Validation
 
-- Peak WBGT: **33.7°C** (June 20, 2015), above EXTREME threshold for all 
-  high-metabolic occupations
-- Steel furnace workers remained at EXTREME risk for **92 consecutive hours**
-- Peak OMGI: **11.7×** - a steel furnace worker experienced heat stress 11.7 
-  times more dangerous than an office worker at the same location and moment
-- WBGT–mortality correlation: **r = 0.53** (n=8 days)
+- **Peak WBGT:** Estimated WBGT peaked at **33.7 °C on June 22, 2015** (coinciding with the Pakistan Meteorological Department's documented severe heatwave window).
+- **Occupational Differentiation:** At peak WBGT, 21 of 24 occupation profiles reached the EXTREME risk tier, whereas lower-exertion profiles (delivery riders, vendors, truck drivers) remained at HIGH risk.
+- **Sustained Exposure:** Model outputs reveal a continuous **92-hour EXTREME risk window** for high-radiant steel/glass furnace workers under profile thresholds (June 19–23).
+- **Peak OMGI:** Peak Occupational Mortality Gap Index reached **11.7**, quantifying an environmental heat exposure gap significantly above an indoor climate-controlled reference.
 
 ---
 
-## The OMGI
+## Occupational Mortality Gap Index (OMGI)
 
-The Occupational Mortality Gap Index is an original metric introduced in this 
-project. It quantifies how many times more dangerous a heat event is for an 
-outdoor heavy-labor worker versus an air-conditioned office worker at the same 
-GPS coordinate and time. During the 2015 Karachi peak, that number was 11.7.
+The Occupational Mortality Gap Index (OMGI) is a normalized metric introduced in this project to summarize environmental heat exposure inequality. It quantifies how far ambient WBGT exceeds a climate-controlled indoor reference baseline ($W_{\text{ref}} = 22\text{ }^\circ\text{C}$):
 
----
+$$\text{OMGI} = \max\left\{1, 10 \cdot \frac{\text{WBGT} - W_{\text{ref}}}{W_{\text{ext}} - W_{\text{ref}}}\right\}$$
 
-## Occupation profiles
-
-24 Pakistan-specific worker categories with individual WBGT thresholds 
-and NIOSH work/rest schedules:
-
-Salt pan workers · Steel furnace workers · Brick kiln workers (Bhatta Mazdoor) ·  
-Tandoor bakers · Road pavers · Sewage workers · Naali safai workers ·  
-Cotton pickers · Fishermen (Machera) · Rickshaw drivers · Kabari walas ·  
-Construction laborers · and 12 more.
-
-Thresholds are set lower for workers with higher metabolic rates and radiant 
-heat exposure; a salt pan worker's EXTREME threshold is 28°C WBGT, not 32°C, 
-because white salt flats reflect 80% of solar radiation from below as well as above.
+where $W_{\text{ext}} = 32\text{ }^\circ\text{C}$ corresponds to the EXTREME threshold of a heavy-labor worker. During the June 22, 2015 Karachi peak, the OMGI reached 11.7.
 
 ---
 
-## El Niño mode
+## Occupation Profiles
 
-WHO–WMO declared El Niño a "significant public health threat" in September 2026. 
-The Climate Impact Lab projects 451,000 additional heat deaths globally through 
-February 2027. When El Niño mode is toggled on, HeatGuard applies a +1.2°C 
-WBGT elevation across all classifications; consistent with Climate Impact Lab 
-projections of 44% more extremely hot days.
+24 Pakistan-specific worker categories with individual WBGT thresholds and NIOSH-anchored work/rest allocations:
 
----
+Salt pan workers · Steel / glass furnace workers · Brick kiln workers (Bhatta Mazdoor) · Tandoor bakers · Road pavers / asphalt layers · Sewage / manhole workers · Open drain cleaners (Naali safai wala) · Cotton pickers · Fishermen (Machera) · Rickshaw drivers · Scrap collectors (Kabari wala) · Construction laborers · and 12 more.
 
-## Cities covered
-
-Karachi · Lahore · Islamabad · Peshawar · Quetta · Multan ·  
-Faisalabad · Hyderabad · Sukkur · Larkana · Jacobabad · Sibi . Jamshoro
-
-Jacobabad and Sibi are among the hottest cities on earth by peak WBGT and 
-regularly approach the theoretical limit of human survivability.
+Thresholds are set lower for occupations with high metabolic rates or high radiant heat exposure. For example, a salt pan worker's EXTREME threshold is set to 28 °C WBGT rather than 32 °C to account for ground radiation reflected off white salt flats.
 
 ---
 
-## Project structure
+## El Niño Sensitivity Mode
+
+In September 2026, the WHO–WMO Joint Programme declared the ongoing El Niño phase a "significant public health threat," with independent projections estimating substantial additional heat mortality globally through early 2027. 
+
+When El Niño mode is toggled on, HeatGuard applies a precautionary +1.2 °C land-temperature anomaly across classifications. This sensitivity scenario is disabled in all retrospective historical validation runs.
+
+---
+
+## Cities Covered (13)
+
+Karachi · Lahore · Islamabad · Peshawar · Quetta · Multan · Faisalabad · Hyderabad · Sukkur · Larkana · Jacobabad · Sibi · Jamshoro
+
+Jacobabad and Sibi are among the hottest cities on earth by peak WBGT and regularly approach theoretical human survival limits.
+
+---
+
+## Project Structure
+
+```text
 heatguard/
 ├── dashboard/
-│ └── app.py # Streamlit dashboard
+│   └── app.py                     # Streamlit web interface
 ├── scripts/
-│ ├── fetch_weather.py # Open-Meteo API, 12 Pakistan cities
-│ ├── wbgt_calculator.py # Stull (2011) formula, solar correction
-│ ├── occupation_classifier.py # 24 profiles, NIOSH thresholds, OMGI
-│ ├── mortality_analysis.py # 2015 heatwave correlation analysis
-│ └── guidance_generator.py # Gemini bilingual guidance generator
+│   ├── fetch_weather.py           # Open-Meteo API fetching (13 Pakistani cities)
+│   ├── wbgt_calculator.py         # Stull (2011) WBGT calculation & ISO 7243 weighting
+│   ├── occupation_classifier.py   # 24 profile thresholds, NIOSH schedules, OMGI
+│   ├── threshold_check.py         # Profile threshold & NIOSH formula verification
+│   ├── sustained_exposure.py      # Multi-day exposure run analysis script
+│   └── guidance_generator.py      # Gemini structured JSON bilingual guidance engine
 └── data/
-└── karachi_2015_heatwave.csv
+    └── karachi_2015_heatwave.csv  # Historical ERA5 meteorological dataset (192 records)
 
+```
 
+---
 
-## Run locally
+## Run Locally
 
 ```bash
-git clone https://github.com/sshizashah13/heatguard.git
+git clone [https://github.com/sshizashah13/heatguard.git](https://github.com/sshizashah13/heatguard.git)
 cd heatguard
 pip install -r requirements.txt
 streamlit run dashboard/app.py
+
 ```
 
-Add a `.env` file with your Gemini API key:
+Add a `.env` file in the root directory with your Gemini API key:
+
+```env
 GEMINI_API_KEY=your_key_here
 
+```
 
 ---
 
 ## References
 
-- Stull, R. (2011). Wet-Bulb Temperature from Relative Humidity and Air 
-  Temperature. *Journal of Applied Meteorology and Climatology*, 50(11), 2267–2269.
-- NIOSH (2016). *Criteria for a Recommended Standard: Occupational Exposure 
-  to Heat and Hot Environments*. DHHS (NIOSH) Publication No. 2016-106.
-- ISO 7933:2004. *Ergonomics of the thermal environment — analytical 
-  determination of thermal stress*.
-- WHO–WMO Joint Programme (2026). El Niño declared significant public health 
-  threat. *Dawn*, September 22, 2026.
-- Climate Impact Lab (2026). El Niño heat mortality projections. 
-  *Dawn*, September 23, 2026.
+* Stull, R. (2011). Wet-Bulb Temperature from Relative Humidity and Air Temperature. *Journal of Applied Meteorology and Climatology*, 50(11), 2267–2269.
+* NIOSH (2016). *Criteria for a Recommended Standard: Occupational Exposure to Heat and Hot Environments*. DHHS (NIOSH) Publication No. 2016-106.
+* ISO 7243:2017. *Ergonomics of the thermal environment — Assessment of heat stress using the WBGT (Wet Bulb Globe Temperature) index*.
+* Chaudhry, Q. Z., et al. (2015). *Technical Report on Karachi Heat Wave June 2015*. Ministry of Climate Change, Government of Pakistan.
+* WHO–WMO Joint Programme (2026). El Niño declared significant public health threat. *Dawn*, September 22, 2026.
 
 ---
 
 ## Conference
 
-Submitted to the 1st International Conference on Smart Sustainable Infrastructure  
-for Circular Economy and Resource Efficiency - MUET Jamshoro
+Submitted to the **1st International Conference on Smart Sustainable Infrastructure for Circular Economy and Resource Efficiency (SINCERE-CON 2027)** — MUET Jamshoro
 
-**Author:** Shiza Shah · Department of Computer Science · MUET Jamshoro  
-**LinkedIn:** [linkedin.com/in/sshizashah](https://linkedin.com/in/sshizashah)
+**Author:** Shiza Shah · Department of Computer Science · MUET Jamshoro
+
+**GitHub:** [github.com/sshizashah13/heatguard](https://github.com/sshizashah13/heatguard)
+
+```
+
+---
+
+### **How to Commit this Update:**
+
+If you edit the `README.md` directly on GitHub:
+1. Save/Commit the changes on GitHub.
+2. In Anaconda Prompt, run:
+   ```bash
+   git pull
+
+```
