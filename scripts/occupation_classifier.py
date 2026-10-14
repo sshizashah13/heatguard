@@ -213,7 +213,6 @@ def calculate_omgi(wbgt):
     return round(max(1.0, gap * 10), 1)
 
 # NIOSH REL maximum exposure duration lookup
-# Source: NIOSH (2016) Publication No. 2016-106, Table B-1
 # Values represent maximum continuous work minutes before mandatory rest
 # at given WBGT levels for each metabolic rate category
 NIOSH_MAX_EXPOSURE = {

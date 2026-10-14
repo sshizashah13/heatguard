@@ -976,7 +976,7 @@ st.markdown(f"""
   <div class="metric-card" style="--c:#a78bfa">
     <div class="metric-glow"></div>
     <div class="m-label">OMGI Score</div>
-    <div class="m-value">{omgi_val:.1f}×</div>
+    <div class="m-value">{omgi_val:.1f}</div>
     <div class="m-sub">Occupational Mortality Gap Index — quantifies the thermal exposure gap of an outdoor worker above a climate-controlled indoor reference (22°C).</div>
   </div>
   <div class="metric-card" style="--c:{rc['hex']}">
@@ -1003,7 +1003,7 @@ st.markdown(f"""
 # ── RISK BANNER ───────────────────────────────────────────────────────────
 surv_minutes = get_survivability_minutes(wbgt_val, occ_key)
 surv_text = (
-    f"Max continuous exposure without rest: {surv_minutes} min"
+    f"Indicative max continuous work without rest: {surv_minutes} min"
     if surv_minutes > 0
     else "No safe continuous exposure at this WBGT"
 )
@@ -1081,7 +1081,7 @@ fig2.add_trace(go.Scatter(
 ))
 fig2.add_hline(y=1.0, line_dash="dot",
                line_color='rgba(255,255,255,0.12)', line_width=1,
-               annotation_text="Office worker baseline (1.0×)",
+               annotation_text="Indoor Reference (1.0)",
                annotation_font_size=9,
                annotation_font_color='rgba(240,236,232,0.2)')
 fig2.add_annotation(
@@ -1094,7 +1094,7 @@ fig2.add_annotation(
     bordercolor='rgba(139,92,246,0.3)',
     borderpad=4
 )
-fig2.update_layout(**PT, height=260, yaxis_title='Multiplier ×', showlegend=False)
+fig2.update_layout(**PT, height=260, yaxis_title='Index Units', showlegend=False)
 st.plotly_chart(fig2, use_container_width=True, config={'displayModeBar': False})
 
 # ── OCCUPATION GRID ────
@@ -1223,7 +1223,7 @@ if "2015" in view_mode:
 
         ma, mb, mc, md = st.columns(4)
         ma.metric("WBGT–Death Correlation", f"r = {report['wbgt_death_correlation']}")
-        mb.metric("Excess Deaths", report['total_excess_deaths'])
+        mbcc.metric("Excess Deaths", report['total_excess_deaths'])
         mc.metric("Peak Mortality Day", report['peak_mortality_day'])
         md.metric("Longest Kill Window", f"{report['longest_kill_window_hours']} hrs")
 
