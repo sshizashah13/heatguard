@@ -124,5 +124,3 @@ Submitted to the **1st International Conference on Smart Sustainable Infrastruct
 
 **GitHub:** [github.com/sshizashah13/heatguard](https://github.com/sshizashah13/heatguard)
 
-```
-
