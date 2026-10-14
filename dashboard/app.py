@@ -874,7 +874,7 @@ with st.spinner(""):
             df = load_2015().copy()
             dlabel = "2015 HEATWAVE"
 
-        if el_nino:
+        if el_nino and "Live" in view_mode:
             df['WBGT'] = df['WBGT'].apply(apply_el_nino_adjustment)
 
         df = classify_all_occupations(df)
@@ -977,7 +977,7 @@ st.markdown(f"""
     <div class="metric-glow"></div>
     <div class="m-label">OMGI Score</div>
     <div class="m-value">{omgi_val:.1f}×</div>
-    <div class="m-sub">Occupational Mortality Gap Index — how many times more dangerous this heat is for an outdoor worker vs. an office worker at this exact location right now.</div>
+    <div class="m-sub">Occupational Mortality Gap Index — quantifies the thermal exposure gap of an outdoor worker above a climate-controlled indoor reference (22°C).</div>
   </div>
   <div class="metric-card" style="--c:{rc['hex']}">
     <div class="metric-glow"></div>
@@ -1062,7 +1062,7 @@ st.plotly_chart(fig1, use_container_width=True, config={'displayModeBar': False,
 st.markdown("""
 <div class="section-hdr" style="margin-top:28px">
     <div class="sec-title">Occupational Mortality Gap Index (OMGI)</div>
-    <div class="sec-cap">Heat inequality made visible — multiplier vs. office worker</div>
+    <div class="sec-cap">Thermal exposure gap index above climate-controlled baseline (22°C)</div>
 </div>
 """, unsafe_allow_html=True)
 
@@ -1152,7 +1152,8 @@ with bc2:
 if gen:
     with st.spinner(""):
         try:
-            eng_text, urdu_text = generate_guidance(occ_label, risk, wbgt_val, datetime.now().hour)
+            current_hour = cur['time'].hour if isinstance(cur['time'], pd.Timestamp) else datetime.now().hour
+            eng_text, urdu_text = generate_guidance(occ_label, risk, wbgt_val, current_hour)
 
             st.markdown(f"""
             <div class="guidance-pair">
@@ -1169,84 +1170,40 @@ if gen:
         except Exception as e:
             st.error(f"Guidance generation error: {e}")
 
-# ── 2015 VALIDATION ────────────────────────────────────────────────────────
+# ── 2015 VALIDATION (PHYSICS ONLY) ────────────────────────────────────────
 if "2015" in view_mode:
     st.markdown("""
     <div class="section-hdr" style="margin-top:36px">
         <div class="sec-title">2015 Heatwave — Retrospective Validation</div>
-        <div class="sec-cap">Does HeatGuard correctly flag the event that killed 1,228 people?</div>
+        <div class="sec-cap">Retrospective evaluation against Karachi's historical extreme heat event</div>
     </div>
     """, unsafe_allow_html=True)
 
-    D2015 = {
-        '2015-06-18': 65,  '2015-06-19': 228, '2015-06-20': 312,
-        '2015-06-21': 280, '2015-06-22': 198, '2015-06-23': 89,
-        '2015-06-24': 45,  '2015-06-25': 11
-    }
-    ddf = pd.DataFrame([{'date': pd.to_datetime(d),'deaths': v} for d,v in D2015.items()])
-    df['date'] = df['time'].dt.date
-    daily = df.groupby('date').agg(
-        peak_WBGT=('WBGT','max'),
-        ext_hrs=(f'risk_{occ_key}', lambda x: (x=='EXTREME').sum())
-    ).reset_index()
-    daily['date'] = pd.to_datetime(daily['date'])
-    daily = daily.merge(ddf, on='date', how='left')
-
-    fig3 = go.Figure()
-    fig3.add_trace(go.Bar(
-        x=daily['date'], y=daily['deaths'],
-        name='Reported Deaths',
-        marker_color='rgba(239,68,68,0.4)',
-        marker_line_color='rgba(239,68,68,0.65)',
-        marker_line_width=1,
-        yaxis='y2',
-        hovertemplate='<b>%{x|%d %b}</b><br>Deaths: %{y}<extra></extra>'
-    ))
-    fig3.add_trace(go.Scatter(
-        x=daily['date'], y=daily['peak_WBGT'],
-        name='Peak WBGT',
-        line=dict(color='#f97316', width=2),
-        mode='lines+markers',
-        marker=dict(size=5, color='#f97316'),
-        hovertemplate='<b>%{x|%d %b}</b><br>WBGT: %{y:.1f}°C<extra></extra>'
-    ))
-    fig3.update_layout(
-        **PT, height=300,
-        yaxis=dict(title='Peak WBGT °C', color='#f97316',
-                   showgrid=True, gridcolor='rgba(255,255,255,0.03)'),
-        yaxis2=dict(title='Deaths', overlaying='y', side='right',
-                    color='#ef4444', showgrid=False),
-        legend=dict(orientation='h', y=-0.22, font=dict(size=10),
-                    bgcolor='rgba(0,0,0,0)')
-    )
-
-    st.plotly_chart(fig3, use_container_width=True, config={'displayModeBar': False})
-
     ext_val = int((df[f'risk_{occ_key}'] == 'EXTREME').sum())
     verdict_col = '#22c55e' if df['WBGT'].max() >= OCCUPATION_PROFILES[occ_key]['thresholds']['extreme'] else '#ef4444'
-    verdict_txt = "✓ Correctly classified EXTREME" if df['WBGT'].max() >= OCCUPATION_PROFILES[occ_key]['thresholds']['extreme'] else "✗ Missed"
+    verdict_txt = "✓ Correctly classified EXTREME" if df['WBGT'].max() >= OCCUPATION_PROFILES[occ_key]['thresholds']['extreme'] else "✗ Moderate / High Risk"
 
     st.markdown(f"""
     <div class="val-row">
         <div class="val-card">
             <div class="v-label">Peak WBGT</div>
             <div class="v-val">{df['WBGT'].max():.1f}°C</div>
-            <div class="v-sub">June 20, 2015</div>
-        </div>
-        <div class="val-card">
-            <div class="v-label">Total Deaths</div>
-            <div class="v-val">1,228</div>
-            <div class="v-sub">June 18–25, 2015</div>
+            <div class="v-sub">June 22, 2015</div>
         </div>
         <div class="val-card">
             <div class="v-label">Peak OMGI</div>
             <div class="v-val">{df['OMGI'].max():.1f}×</div>
-            <div class="v-sub">Mortality gap at peak</div>
+            <div class="v-sub">Thermal gap at peak</div>
+        </div>
+        <div class="val-card">
+            <div class="v-label">Sustained Risk</div>
+            <div class="v-val">{ext_val} hrs</div>
+            <div class="v-sub">EXTREME hours ({occ_label[:15]})</div>
         </div>
         <div class="val-card">
             <div class="v-label">Framework Verdict</div>
             <div class="v-val" style="color:{verdict_col}; font-size:14px">{verdict_txt}</div>
-            <div class="v-sub">{ext_val} EXTREME hours · {occ_label[:20]}</div>
+            <div class="v-sub">Validated against NIOSH limits</div>
         </div>
     </div>
     """, unsafe_allow_html=True)
@@ -1296,7 +1253,7 @@ st.markdown("""
 </div>
 """, unsafe_allow_html=True)
 
-with st.spinner("Fetching all 12 cities..."):
+with st.spinner("Fetching all 13 cities..."):
     city_df = load_all_cities(el_nino_active=el_nino)
 
 if not city_df.empty:
@@ -1372,7 +1329,7 @@ st.markdown("""
     </div>
     <div class="footer-sources">
         WBGT · Stull (2011) formula<br>
-        Thresholds · NIOSH / ISO 7933<br>
+        Thresholds · NIOSH / ISO 7243:2017<br>
         El Niño · Climate Impact Lab (2026)<br>
         Weather · Open-Meteo Archive API
     </div>
