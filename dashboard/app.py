@@ -1208,15 +1208,6 @@ if "2015" in view_mode:
     </div>
     """, unsafe_allow_html=True)
 
-# ── MORTALITY ANALYSIS ────────────────────────────────────────────────────
-if "2015" in view_mode:
-    st.markdown("""
-    <div class="section-hdr" style="margin-top:36px">
-        <div class="sec-title">Mortality Miscounting Analysis</div>
-        <div class="sec-cap">Excess deaths above baseline — how many were never labeled heat-related?</div>
-    </div>
-    """, unsafe_allow_html=True)
-
 # ── CITY COMPARISON PANEL ─────────────────────────────────────────────────
 st.markdown("""
 <div class="section-hdr" style="margin-top:36px">
@@ -1262,7 +1253,12 @@ if not city_df.empty:
     st.dataframe(
         styled,
         use_container_width=True,
-        hide_index=True
+        hide_index=True,
+        column_config={
+            "WBGT (°C)": st.column_config.NumberColumn(format="%.1f"),
+            "Temp (°C)": st.column_config.NumberColumn(format="%.1f"),
+            "OMGI": st.column_config.NumberColumn(format="%.1f"),
+        },
     )
 
     top_city = city_df.iloc[0]
@@ -1273,10 +1269,10 @@ if not city_df.empty:
          border-radius:4px; font-size:13px; color:rgba(240,236,232,0.55)">
         <strong style="color:rgba(240,236,232,0.8)">{top_city['City']}</strong>
         has the highest current WBGT at
-        <strong style="color:{top_risk_col}">{top_city['WBGT (°C)']}°C</strong>
+        <strong style="color:{top_risk_col}">{top_city['WBGT (°C)']:.1f}°C</strong>
         — heavy workers here face
         <strong style="color:{top_risk_col}">{top_city['Heavy Worker Risk']} RISK</strong>
-        with an OMGI of {top_city['OMGI']}×.
+        with an OMGI of {top_city['OMGI']:.1f}.
     </div>
     """, unsafe_allow_html=True)
 
